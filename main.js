@@ -187,7 +187,7 @@ function handleGeigerCounter() {
     }
     else {
         geigerBeepEffect.playbackRate = 4*Math.sin(0.0001445613057*N + 0.1251832699);
-    }
+    }  
 }
 
 let geigerCounterInterval = setInterval(handleGeigerCounter, 10);
