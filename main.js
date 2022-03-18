@@ -38,6 +38,8 @@ let sliderTextLeft;
 let sliderTextRight;
 let sliderTitle;
 
+let geigerBeepEffect;
+
 let centerX;
 let centerY;
 let sliderMiddle;
@@ -61,7 +63,7 @@ function preload () {
     this.load.image("dimmed_background", "assets/img/reactorcitybgdimmed.jpg");
     this.load.image("sliderbg", "assets/img/sliderbg.png");
     this.load.image("sliderbox", "assets/img/smallbox.png");
-
+    this.load.audio("geigerbeep", ["assets/audio/geigercounter.wav"]);
 }
 
 function create () {
@@ -142,6 +144,10 @@ function create () {
             }
         }
     });
+
+    geigerBeepEffect = this.sound.add("geigerbeep");
+    geigerBeepEffect.loop = true;
+    geigerBeepEffect.play();
 }
 
 function roundToDecimalPlaces(num, decimalPlaces) {
@@ -156,7 +162,6 @@ function simulateReactor() {
     deltaN = Sk * interval + Sf * interval;
     energi = Math.abs(N * 200);
     energi = energi.toFixed(10)
-    console.log(energi)
     effekt = energi / interval;
     N += deltaN;
 
@@ -168,18 +173,31 @@ function simulateReactor() {
     debugSk.setText("Ekstern neutrontilførsel: " + Sk.toFixed(2));
     debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(2));
 
-    console.log("------")
-    console.log("Time: " + t + "s")
-    console.log("K:" + K);
-    console.log("Sf: " + Sf);
-    console.log("Sk: " + Sk);
-    console.log("N: " + N);
-    console.log("DeltaN: " + deltaN);
+    // console.log("------")
+    // console.log("Time: " + t + "s")
+    // console.log("K:" + K);
+    // console.log("Sf: " + Sf);
+    // console.log("Sk: " + Sk);
+    // console.log("N: " + N);
+    // console.log("DeltaN: " + deltaN);
     //simulateReactor();
 }
 
 
 function update(time, delta) {
+    
+
+    if (game.sound.context.state === 'suspended') {
+        this.sound.context.resume();
+    }
+
+    if (K > 1) {
+        this.sound.setMute(false);
+    }
+    else {
+        this.sound.setMute(true);
+    }
+
     dt = delta / 1000;
     interval = dt;
     //coreTempTextbg.displayWidth = coreTempText.width + 10;
@@ -187,6 +205,8 @@ function update(time, delta) {
     neutronCounterTextbg.displayWidth = neutronCounterText.width + 10;
     
     controlRodPercentage = (sliderBox.x - 215) / 621;
+
+    
 
     simulateReactor();
 
