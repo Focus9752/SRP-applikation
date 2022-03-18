@@ -38,7 +38,7 @@ let sliderTextLeft;
 let sliderTextRight;
 let sliderTitle;
 
-let geigerBeepEffect;
+let geigerBeepEffect = document.getElementById("geigerAudioElem");
 
 let centerX;
 let centerY;
@@ -143,11 +143,7 @@ function create () {
                 
             }
         }
-    });
-
-    geigerBeepEffect = this.sound.add("geigerbeep");
-    geigerBeepEffect.loop = true;
-    geigerBeepEffect.play();
+    });    
 }
 
 function roundToDecimalPlaces(num, decimalPlaces) {
@@ -183,6 +179,18 @@ function simulateReactor() {
     //simulateReactor();
 }
 
+function handleGeigerCounter() {
+    geigerBeepEffect.muted = false;
+    geigerBeepEffect.volume = 1;
+    if(N > 10000){
+        geigerBeepEffect.playbackRate = 4;
+    }
+    else {
+        geigerBeepEffect.playbackRate = 4*Math.sin(0.0001445613057*N + 0.1251832699);
+    }
+}
+
+let geigerCounterInterval = setInterval(handleGeigerCounter, 10);
 
 function update(time, delta) {
     
@@ -191,12 +199,7 @@ function update(time, delta) {
         this.sound.context.resume();
     }
 
-    if (K > 1) {
-        this.sound.setMute(false);
-    }
-    else {
-        this.sound.setMute(true);
-    }
+    
 
     dt = delta / 1000;
     interval = dt;
