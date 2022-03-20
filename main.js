@@ -49,7 +49,7 @@ let deltaTime;
 let K, Sf, t = 0, N = 0, dt = 0, L = 0.1, Sk = 10, R = 0;
 let interval = 0.0001;
 let deltaN;
-let energi;
+let energy;
 let effekt;
 
 let firstDrag = true;
@@ -84,7 +84,7 @@ function create () {
 
     //Tegn de tre info-bokse
     // coreTempTitle = this.add.text(centerX - 350, 100, "Temperatur", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    // coreTempTextbg = this.add.rectangle(centerX - 350, 150, coreTempTitle.width, 50, "black");
+    // coreTempTextbg = this.add.rectangle(centerX - 350, 150, 250, 50, "black");
     // coreTempTextbg.setStrokeStyle(4, orangeColor);
     // coreTempText = this.add.text(centerX - 350, 150, "### \u00B0C", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
     
@@ -95,12 +95,12 @@ function create () {
 
 
     powerOutputTitle = this.add.text(centerX, 100, "Energi", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    powerOutputTextbg = this.add.rectangle(centerX, 150, powerOutputTitle.width, 50, "black");
+    powerOutputTextbg = this.add.rectangle(centerX, 150, 250, 50, "black");
     powerOutputTextbg.setStrokeStyle(4, orangeColor);
     powerOutputText = this.add.text(centerX, 150, "### MW", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
 
     neutronCounterTitle = this.add.text(centerX + 350, 100, "Neutrontæller", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    neutronCounterTextbg = this.add.rectangle(centerX + 350, 150, neutronCounterTitle.width, 50, "black");
+    neutronCounterTextbg = this.add.rectangle(centerX + 350, 150, 250, 50, "black");
     neutronCounterTextbg.setStrokeStyle(4, orangeColor);
     neutronCounterText = this.add.text(centerX + 350, 150, "### /s", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
 
@@ -150,19 +150,46 @@ function roundToDecimalPlaces(num, decimalPlaces) {
     return Number(Math.round(num + "e" + decimalPlaces) + "e-" + decimalPlaces);
 }
 
+function displayWithSiUnit(num, unit) {
+    prefixes = {
+        //Bruger strenge i stedet for tal fordi JS ikke understøtter negative nøgler til objekter
+        "-24": "y",
+        "-21": "z",
+        "-18": "a",
+        "-15": "f",
+        "-12": "p",
+        "-9": "n",
+        //Mikro er det eneste præfiks med et græsk bogstav...
+        "-6": "\u03BC",
+        "-3": "m",
+        "0": " ",
+        "3": "k",
+        "6": "M",
+        "9": "G",
+        "12": "T",
+        "15": "P",
+        "18": "E",
+        "21": "Z",
+        "24": "Y"
+    }
+
+    let exponent = string(Math.log10(num))[0];
+
+}
+
 function simulateReactor() {
     R = controlRodPercentage * 75;
     K = 0.9995 - 0.008 * Math.sin(R * (Math.PI/75) + (Math.PI/2));
     Sf = (K - 1) * N / L;
     t += interval;
     deltaN = Sk * interval + Sf * interval;
-    energi = Math.abs(N * 200);
-    energi = energi.toFixed(10)
-    effekt = energi / interval;
+    energy = Math.abs(N * 3.2*Math.pow(10,-11));
+    energy = energy.toFixed(10)
+    effekt = energy / interval;
     N += deltaN;
 
-    powerOutputText.setText(Math.round(energi) + " MeV/s");
-    neutronCounterText.setText(Math.round(N) + " neutroner");
+    powerOutputText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 }).format(Math.round(energy)) + " W/s");
+    neutronCounterText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 }).format(Math.round(N)) + " neutroner");
 
     debugK.setText("Multiplikationsfaktor: " + K.toFixed(3));
     debugSf.setText("Neutroner skabt ved fission /s: " + Sf.toFixed(2));
@@ -192,6 +219,8 @@ function handleGeigerCounter() {
 
 let geigerCounterInterval = setInterval(handleGeigerCounter, 10);
 
+let formatter = Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 });
+
 function update(time, delta) {
     
 
@@ -203,9 +232,7 @@ function update(time, delta) {
 
     dt = delta / 1000;
     interval = dt;
-    //coreTempTextbg.displayWidth = coreTempText.width + 10;
-    powerOutputTextbg.displayWidth = powerOutputText.width + 10;
-    neutronCounterTextbg.displayWidth = neutronCounterText.width + 10;
+    
     
     controlRodPercentage = (sliderBox.x - 215) / 621;
 
