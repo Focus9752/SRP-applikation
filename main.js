@@ -46,7 +46,7 @@ let sliderMiddle;
 
 let controlRodPercentage = 0;
 let deltaTime;
-let K, Sf, t = 0, N = 0, dt = 0, L = 0.1, Sk = 3.1 * Math.pow(10,9), R = 0;
+let K, Sf, t = 0, N = 3.2 * Math.pow(10,19), dt = 0, L = 0.1, R = 0;
 let interval = 0.0001;
 let deltaN;
 let energy;
@@ -84,25 +84,27 @@ function create () {
 
     //Tegn de tre info-bokse
     // coreTempTitle = this.add.text(centerX - 350, 100, "Temperatur", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    // coreTempTextbg = this.add.rectangle(centerX - 350, 150, 250, 50, "black");
+    // coreTempTextbg = this.add.rectangle(centerX - 350, 150, 300, 50, "black");
     // coreTempTextbg.setStrokeStyle(4, orangeColor);
     // coreTempText = this.add.text(centerX - 350, 150, "### \u00B0C", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
     
-    debugK = this.add.text(10, 250, "Multiplikationsfaktor: ", { font: "25px Courier", color: "white", align: "left"});
-    debugSf = this.add.text(10, 270, "Neutroner skabt ved fission /s: ", { font: "25px Courier", color: "white", align: "left"});
-    debugSk = this.add.text(10, 290, "Ekstern neutrontilførsel: ", { font: "25px Courier", color: "white", align: "left"});
-    debugR = this.add.text(10, 310, "Kontrolstangsposition (0 = helt inde) /cm: ", { font: "25px Courier", color: "white", align: "left"});
+    
 
 
-    powerOutputTitle = this.add.text(centerX, 100, "Energi", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    powerOutputTextbg = this.add.rectangle(centerX, 150, 250, 50, "black");
+    powerOutputTitle = this.add.text(centerX, 100, "Effekt ved fission", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    powerOutputTextbg = this.add.rectangle(centerX, 150, 300, 50, "black");
     powerOutputTextbg.setStrokeStyle(4, orangeColor);
     powerOutputText = this.add.text(centerX, 150, "### MW", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
 
     neutronCounterTitle = this.add.text(centerX + 350, 100, "Neutrontæller", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    neutronCounterTextbg = this.add.rectangle(centerX + 350, 150, 250, 50, "black");
+    neutronCounterTextbg = this.add.rectangle(centerX + 350, 150, 300, 50, "black");
     neutronCounterTextbg.setStrokeStyle(4, orangeColor);
     neutronCounterText = this.add.text(centerX + 350, 150, "### /s", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
+
+    debugK = this.add.text(10, 250, "Multiplikationsfaktor: ", { font: "25px Courier", color: "white", align: "left"});
+    debugSf = this.add.text(10, 270, "Neutroner skabt ved fission /s: ", { font: "25px Courier", color: "white", align: "left"});
+    debugSk = this.add.text(10, 290, "Ekstern neutrontilførsel: ", { font: "25px Courier", color: "white", align: "left"});
+    debugR = this.add.text(10, 310, "Kontrolstangsposition (0 = helt inde) /cm: ", { font: "25px Courier", color: "white", align: "left"});
 
     //Første baggrund + velkomst
     bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
@@ -197,17 +199,15 @@ function simulateReactor() {
     K = 0.9995 - 0.008 * Math.sin(R * (Math.PI/75) + (Math.PI/2));
     Sf = (K - 1) * N / L;
     t += interval;
-    deltaN = Sk * interval + Sf * interval;
-    energy = N * 3.2 * Math.pow(10,-11);
-    effekt = energy / interval;
+    deltaN = Sf * interval;
     N += deltaN;
+    effekt = N * 3.2 * Math.pow(10,-11);
 
-    powerOutputText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(energy)) + " W");
+    powerOutputText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(effekt)) + " W");
     neutronCounterText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(N)) + " neutroner");
 
     debugK.setText("Multiplikationsfaktor: " + K.toFixed(3));
     debugSf.setText("Neutroner skabt ved fission /s: " + Sf.toFixed(2));
-    debugSk.setText("Ekstern neutrontilførsel: " + Sk.toFixed(2));
     debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(2));
 
     // console.log("------")
