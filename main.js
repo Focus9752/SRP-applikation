@@ -46,7 +46,7 @@ let sliderMiddle;
 
 let controlRodPercentage = 0;
 let deltaTime;
-let K, Sf, t = 0, N = 0, dt = 0, L = 0.1, Sk = 10, R = 0;
+let K, Sf, t = 0, N = 0, dt = 0, L = 0.1, Sk = 3.1 * Math.pow(10,9), R = 0;
 let interval = 0.0001;
 let deltaN;
 let energy;
@@ -150,6 +150,7 @@ function roundToDecimalPlaces(num, decimalPlaces) {
     return Number(Math.round(num + "e" + decimalPlaces) + "e-" + decimalPlaces);
 }
 
+
 function displayWithSiUnit(num, unit) {
     prefixes = {
         //Bruger strenge i stedet for tal fordi JS ikke understøtter negative nøgler til objekter
@@ -159,7 +160,7 @@ function displayWithSiUnit(num, unit) {
         "-15": "f",
         "-12": "p",
         "-9": "n",
-        //Mikro er det eneste præfiks med et græsk bogstav...
+        //Mikro er det eneste præfiks med et græsk bogstav O.O
         "-6": "\u03BC",
         "-3": "m",
         "0": " ",
@@ -173,7 +174,21 @@ function displayWithSiUnit(num, unit) {
         "24": "Y"
     }
 
-    let exponent = string(Math.log10(num))[0];
+    //Tager første ciffer i log10 af tallet for at få 10-tals eksponenten
+    let log10Num = Math.log10(num);
+    let exponent;
+    //Regn minus med hvis tallet er negativt
+    if (log10Num < 0) {
+        exponent = log10Num.toString()[0] + log10Num.toString()[1]
+    }
+    else {
+        exponent = log10Num.toString()[0];
+    }
+
+    //Træk tal fra indtil vi finder den rette tierpotens der kan deles med tre (10^3, 10^6, osv.)
+    while (exponent % 3 != 0) {
+        exponent
+    }
 
 }
 
@@ -183,13 +198,12 @@ function simulateReactor() {
     Sf = (K - 1) * N / L;
     t += interval;
     deltaN = Sk * interval + Sf * interval;
-    energy = Math.abs(N * 3.2*Math.pow(10,-11));
-    energy = energy.toFixed(10)
+    energy = N * 3.2 * Math.pow(10,-11);
     effekt = energy / interval;
     N += deltaN;
 
-    powerOutputText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 }).format(Math.round(energy)) + " W/s");
-    neutronCounterText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 }).format(Math.round(N)) + " neutroner");
+    powerOutputText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(energy)) + " W");
+    neutronCounterText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(N)) + " neutroner");
 
     debugK.setText("Multiplikationsfaktor: " + K.toFixed(3));
     debugSf.setText("Neutroner skabt ved fission /s: " + Sf.toFixed(2));
