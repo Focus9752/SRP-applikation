@@ -218,10 +218,7 @@ function simulateReactor() {
     K = 0.998 - 0.01 * Math.sin(R * (Math.PI/500) + (Math.PI/2));
     Sf = (K - 1) * N / L;
     t += dt;
-    N += Sf * dt;
-    if (N < 1) {
-        N = 0;
-    }
+    N += Math.round(Sf * dt);
     power = N * 3.2 * Math.pow(10,-11);
 }
 
@@ -272,7 +269,13 @@ function update(time, delta) {
     debugK.setText("Multiplikationsfaktor: " + K.toFixed(4));
     debugSf.setText("Neutronoverskud ved fission: " + formatter.format(Sf));
     debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(4));
-    debugt.setText("Simuleret tid siden start /s: " + t.toFixed(5));
+
+    //Konverter tid til HH-MM-SS format
+    var date = new Date(null);
+    date.setSeconds(t);
+    var result = date.toISOString().substr(11, 8);
+
+    debugt.setText("Simuleret tid siden start /s: " + result);
 
     //Opdater info-bokse
     powerOutputText.setText(formatter.format(power) + " W")
