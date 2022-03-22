@@ -33,10 +33,20 @@ let debugSf;
 let debugSk;
 let debugR;
 
-let sliderBox;
+let controlRodSlider;
 let sliderTextLeft;
 let sliderTextRight;
 let sliderTitle;
+
+let timeSliderbg;
+let timeSlider;
+let timeSliderTitle;
+let timeSliderText100x;
+let timeSliderText10x;
+let timeSliderText1x;
+let timeSliderText01x;
+let timeSliderText001x;
+
 
 let geigerBeepEffect = document.getElementById("geigerAudioElem");
 
@@ -47,20 +57,18 @@ let sliderMiddle;
 let controlRodPercentage = 0;
 let deltaTime;
 let K, Sf, t = 0, N = 3.2 * Math.pow(10,19), dt = 0, L = 0.1, R = 0;
-let interval = 0.0001;
 let deltaN;
-let energy;
-let effekt;
+let power;
 
-let firstDrag = true;
-
-let SPACE_key;
-
-let sceneNum = 0;
+let showDebug = false;
+let firstScene = true;
 
 function preload () {
+    //Baggrundsbillede taget fra https://www.vecteezy.com/
     this.load.image('background', 'assets/img/reactorcitybg.jpg');
     this.load.image("dimmed_background", "assets/img/reactorcitybgdimmed.jpg");
+
+    this.load.image("timesliderbg", "assets/img/timesliderbg.png");
     this.load.image("sliderbg", "assets/img/sliderbg.png");
     this.load.image("sliderbox", "assets/img/smallbox.png");
     this.load.audio("geigerbeep", ["assets/audio/geigercounter.wav"]);
@@ -74,196 +82,199 @@ function create () {
     //Baggrund
     bg_dimmed = this.add.image(0, 0, 'dimmed_background').setOrigin(0, 0);
 
-    //Tegn skyder
+    //Tips
+    this.add.text(10, 10, 'Tryk på "D" for at vise og skjule debug-info!', { font: "15px Courier", color: "white", align: "left"});
+
+    //Tegn skyder for kontrolstænger
     this.add.image(centerX, 525, "sliderbg");
-    sliderMiddle = centerX + 2;
-    sliderBox = this.add.image(sliderMiddle, 525, "sliderbox");
+    controlRodSlider = this.add.image(centerX + 2, 525, "sliderbox");
     sliderTextLeft = this.add.text(165, 510, "ind", { font: "25px Arial", color: "black", align: "center"});
     sliderTextRight = this.add.text(852, 509, "ud", { font: "25px Arial", color: "black", align: "center"});
     sliderTitle = this.add.text(centerX, 450, "Kontrolstænger", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
 
-    //Tegn de tre info-bokse
-    // coreTempTitle = this.add.text(centerX - 350, 100, "Temperatur", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    // coreTempTextbg = this.add.rectangle(centerX - 350, 150, 300, 50, "black");
-    // coreTempTextbg.setStrokeStyle(4, orangeColor);
-    // coreTempText = this.add.text(centerX - 350, 150, "### \u00B0C", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
-    
-    
+    //Tegn skyder for tidsskridtsstørrelse
+    timeSliderbg = this.add.image(1000, centerY, "timesliderbg");
+    timeSliderbg.angle = 90;
+    timeSliderbg.setScale(0.5);
+    timeSliderTitle = this.add.text(timeSliderbg.x, 120, "Tidsskalering", { font: "15px Arial", color: "black", align: "center"}).setOrigin(0.5);
 
+    timeSliderText100x = this.add.text(timeSliderbg.x - 46, timeSliderbg.y - 156, "100x", { font: "15px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    timeSliderText10x = this.add.text(timeSliderbg.x - 43, timeSliderbg.y - 79, "10x", { font: "15px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    timeSliderText1x = this.add.text(timeSliderbg.x - 40, timeSliderbg.y, "1x", { font: "15px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    timeSliderText01x = this.add.text(timeSliderbg.x - 43, timeSliderbg.y + 81, "0.1x", { font: "15px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    timeSliderText001x = this.add.text(timeSliderbg.x - 46, timeSliderbg.y + 155, "0.01x", { font: "15px Arial", color: "black", align: "center"}).setOrigin(0.5);
 
-    powerOutputTitle = this.add.text(centerX, 100, "Effekt ved fission", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    powerOutputTextbg = this.add.rectangle(centerX, 150, 300, 50, "black");
+    timeSlider = this.add.image(timeSliderbg.x + 0.5, 300, "sliderbox");
+    timeSlider.setScale(0.55);
+
+    //Tegn info-bokse
+    powerOutputTitle = this.add.text(centerX - 225, 100, "Energi udsendt ved fission", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    powerOutputTextbg = this.add.rectangle(centerX - 225, 150, 300, 50, "black");
     powerOutputTextbg.setStrokeStyle(4, orangeColor);
-    powerOutputText = this.add.text(centerX, 150, "### MW", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
+    powerOutputText = this.add.text(centerX - 225, 150, "### MW", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
 
-    neutronCounterTitle = this.add.text(centerX + 350, 100, "Neutrontæller", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
-    neutronCounterTextbg = this.add.rectangle(centerX + 350, 150, 300, 50, "black");
+    neutronCounterTitle = this.add.text(centerX + 225, 100, "Neutrontæller", { font: "35px Arial", color: "black", align: "center"}).setOrigin(0.5);
+    neutronCounterTextbg = this.add.rectangle(centerX + 225, 150, 300, 50, "black");
     neutronCounterTextbg.setStrokeStyle(4, orangeColor);
-    neutronCounterText = this.add.text(centerX + 350, 150, "### /s", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
+    neutronCounterText = this.add.text(centerX + 225, 150, "### /s", { font: "25px Courier", color: "#00ff00", align: "center"}).setOrigin(0.5);
 
+    //Tegn debug-info
     debugK = this.add.text(10, 250, "Multiplikationsfaktor: ", { font: "25px Courier", color: "white", align: "left"});
-    debugSf = this.add.text(10, 270, "Neutroner skabt ved fission /s: ", { font: "25px Courier", color: "white", align: "left"});
-    debugSk = this.add.text(10, 290, "Ekstern neutrontilførsel: ", { font: "25px Courier", color: "white", align: "left"});
-    debugR = this.add.text(10, 310, "Kontrolstangsposition (0 = helt inde) /cm: ", { font: "25px Courier", color: "white", align: "left"});
+    debugSf = this.add.text(10, 275, "Neutronoverskud ved fission: ", { font: "25px Courier", color: "white", align: "left"});
+    debugR = this.add.text(10, 300, "Kontrolstangsposition (0 = helt inde) /cm: ", { font: "25px Courier", color: "white", align: "left"});
+    debugt = this.add.text(10, 325, "Simuleret tid siden start /s: ", { font: "25px Courier", color: "white", align: "left"});
+    debugK.visible = false;
+    debugSf.visible = false;
+    debugR.visible = false;
+    debugt.visible = false;
 
     //Første baggrund + velkomst
     bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
     welcomeText = this.add.text(centerX + 3, 100, "- Tryk en vilkårlig tast for at starte -", { font: "40px Arial", color: "black", align: "center"}).setOrigin(0.5);
 
-    //Indlæs mellemrumstasten
-    SPACE_key = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    //Gør det muligt at trække i skyderne
+    controlRodSlider.setInteractive();
+    this.input.setDraggable(controlRodSlider);
 
-    //Gør det muligt at trække i skyderen
-    sliderBox.setInteractive();
-    this.input.setDraggable(sliderBox);
+    timeSlider.setInteractive();
+    this.input.setDraggable(timeSlider);
 
+    //Start simultionen når brugeren trykker på skærmen...
     this.input.on('pointerdown', function(pointer){
-            if (sceneNum === 0) {
+            if (firstScene) {
                 bg.destroy();
                 welcomeText.destroy();
-
-                sceneNum++;
+                geigerBeepEffect.muted = false;
+                firstScene = false;
             }
+    });
+
+    //...eller en tast på tastaturet
+    this.input.keyboard.on("keydown", function (event) {
+        if (firstScene) {
+            bg.destroy();
+            welcomeText.destroy();
+            geigerBeepEffect.muted = false;
+            firstScene = false;
+        }
+        
+        //Vis/skjul debug menuen hvis brugeren trykker "D"
+        if (event.code == "KeyD"){
+            if (showDebug) {
+                debugK.visible = false;
+                debugSf.visible = false;
+                debugR.visible = false;
+                debugt.visible = false;
+                showDebug = false;
+            }
+            else {
+                debugK.visible = true;
+                debugSf.visible = true;
+                debugR.visible = true;
+                debugt.visible = true;
+                showDebug = true;
+            }
+        }
+
     });
     
 
     this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-        //Hvis brugeren trækker i skyderen
-        if (gameObject == sliderBox) {
+        //Hvis brugeren trækker i skyderen for kontrolstængerne
+        if (gameObject == controlRodSlider) {
             //Flyt skyderen
-            sliderBox.x = dragX;
+            controlRodSlider.x = dragX;
             
             //Hold skyderen inden for det tilladte område
-            if (sliderBox.x > 836) {
-                sliderBox.x = 836;
+            if (controlRodSlider.x > 836) {
+                controlRodSlider.x = 836;
             }
-            if (sliderBox.x < 215){
-                sliderBox.x = 215;
+            if (controlRodSlider.x < 215){
+                controlRodSlider.x = 215;
             }
+        }
 
-            if (firstDrag){
-                
+        //Hvis brugeren trækker i skyderen for tidsskalering
+        if (gameObject == timeSlider) {
+            let allowedPositions = [144,220,300,381,455];
+            
+            //Find den tilladte position der ligger tættest på
+            let closestAllowedPos = allowedPositions[0];
+            let diff = Math.abs(dragY - closestAllowedPos);
+            for(let i = 0; i < allowedPositions.length; i++) {
+                let tempDiff = Math.abs(dragY - allowedPositions[i]) 
+                if (tempDiff < diff) {
+                    diff = tempDiff;
+                    closestAllowedPos = allowedPositions[i];
+                }
             }
+            timeSlider.y = closestAllowedPos;
         }
     });    
 }
 
-function roundToDecimalPlaces(num, decimalPlaces) {
-    return Number(Math.round(num + "e" + decimalPlaces) + "e-" + decimalPlaces);
-}
-
-
-function displayWithSiUnit(num, unit) {
-    prefixes = {
-        //Bruger strenge i stedet for tal fordi JS ikke understøtter negative nøgler til objekter
-        "-24": "y",
-        "-21": "z",
-        "-18": "a",
-        "-15": "f",
-        "-12": "p",
-        "-9": "n",
-        //Mikro er det eneste præfiks med et græsk bogstav O.O
-        "-6": "\u03BC",
-        "-3": "m",
-        "0": " ",
-        "3": "k",
-        "6": "M",
-        "9": "G",
-        "12": "T",
-        "15": "P",
-        "18": "E",
-        "21": "Z",
-        "24": "Y"
-    }
-
-    //Tager første ciffer i log10 af tallet for at få 10-tals eksponenten
-    let log10Num = Math.log10(num);
-    let exponent;
-    //Regn minus med hvis tallet er negativt
-    if (log10Num < 0) {
-        exponent = log10Num.toString()[0] + log10Num.toString()[1]
-    }
-    else {
-        exponent = log10Num.toString()[0];
-    }
-
-    //Træk tal fra indtil vi finder den rette tierpotens der kan deles med tre (10^3, 10^6, osv.)
-    while (exponent % 3 != 0) {
-        exponent
-    }
-
-}
-
 function simulateReactor() {
-    R = controlRodPercentage * 75;
-    K = 0.9995 - 0.008 * Math.sin(R * (Math.PI/75) + (Math.PI/2));
+    R = controlRodPercentage * 500;
+    K = 0.998 - 0.01 * Math.sin(R * (Math.PI/500) + (Math.PI/2));
     Sf = (K - 1) * N / L;
-    t += interval;
-    deltaN = Sf * interval;
-    N += deltaN;
-    effekt = N * 3.2 * Math.pow(10,-11);
-
-    powerOutputText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(effekt)) + " W");
-    neutronCounterText.setText(Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 3, minimumSignificantDigits: 3 }).format(Math.round(N)) + " neutroner");
-
-    debugK.setText("Multiplikationsfaktor: " + K.toFixed(3));
-    debugSf.setText("Neutroner skabt ved fission /s: " + Sf.toFixed(2));
-    debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(2));
-
-    // console.log("------")
-    // console.log("Time: " + t + "s")
-    // console.log("K:" + K);
-    // console.log("Sf: " + Sf);
-    // console.log("Sk: " + Sk);
-    // console.log("N: " + N);
-    // console.log("DeltaN: " + deltaN);
-    //simulateReactor();
-}
-
-function handleGeigerCounter() {
-    geigerBeepEffect.muted = false;
-    geigerBeepEffect.volume = 1;
-    if(N > 10000){
-        geigerBeepEffect.playbackRate = 4;
+    t += dt;
+    N += Sf * dt;
+    if (N < 1) {
+        N = 0;
     }
-    else {
-        geigerBeepEffect.playbackRate = 4*Math.sin(0.0001445613057*N + 0.1251832699);
-    }  
+    power = N * 3.2 * Math.pow(10,-11);
 }
 
+//Hastigheden og lydstyrken af geigertæller-lydeffekten afhænger af kontrolstængernes position
+function handleGeigerCounter() {
+    try {
+        geigerBeepEffect.volume = controlRodPercentage / 4;
+        geigerBeepEffect.playbackRate = controlRodPercentage;   
+    } 
+    catch (error) {
+        //Gør ingenting
+    }
+}
+
+//Opdater geigertællerens lydeffekt
 let geigerCounterInterval = setInterval(handleGeigerCounter, 10);
 
 let formatter = Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 });
 
 function update(time, delta) {
     
+    //Delta er tiden siden sidste frame i ms
+    //Der omregnes til sekunder
+    dt = delta / 1000;
 
-    if (game.sound.context.state === 'suspended') {
-        this.sound.context.resume();
+    //Tidsskalering
+    switch(timeSlider.y){
+        case 144: 
+            dt *= 100;
+            break;
+        case 220:
+            dt *= 10;
+            break;
+        case 381:
+            dt *= 0.1;
+            break;
+        case 455:
+            dt *= 0.01;
+            break;
+        default:
+            dt *= 1;
     }
 
-    
-
-    dt = delta / 1000;
-    interval = dt;
-    
-    
-    controlRodPercentage = (sliderBox.x - 215) / 621;
-
-    
-
+    controlRodPercentage = (controlRodSlider.x - 215) / 621;
     simulateReactor();
+    
+    //Debug-visning
+    debugK.setText("Multiplikationsfaktor: " + K.toFixed(4));
+    debugSf.setText("Neutronoverskud ved fission: " + formatter.format(Sf));
+    debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(4));
+    debugt.setText("Simuleret tid siden start /s: " + t.toFixed(5));
 
-    //Når en tast trykkes
-    this.input.keyboard.on("keydown", function (event) {
-        
-            if (sceneNum === 0) {
-                bg.destroy();
-                welcomeText.destroy();
-
-                sceneNum++;
-            }
-        
-        console.log(event.code);
-    });
+    //Opdater info-bokse
+    powerOutputText.setText(formatter.format(power) + " W")
+    neutronCounterText.setText(formatter.format(N) + " neutroner")    
 }
