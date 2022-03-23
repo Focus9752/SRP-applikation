@@ -29,10 +29,12 @@ let neutronCounterTitle;
 let neutronCounterText;
 let neutronCounterTextbg;
 
+let debugt
 let debugK;
 let debugSf;
 let debugSk;
 let debugR;
+let debugHalvDobbel
 
 let controlRodSlider;
 let sliderTextLeft;
@@ -126,10 +128,12 @@ function create () {
     debugSf = this.add.text(10, 275, "Neutronoverskud ved fission: ", { font: "25px Courier", color: "white", align: "left"});
     debugR = this.add.text(10, 300, "Kontrolstangsposition (0 = helt inde) /cm: ", { font: "25px Courier", color: "white", align: "left"});
     debugt = this.add.text(10, 325, "Simuleret tid siden start: ", { font: "25px Courier", color: "white", align: "left"});
+    debugHalvDobbel = this.add.text(10, 350, "Halverings/fordoblingskonstant /s: ", { font: "25px Courier", color: "white", align: "left"});
     debugK.visible = false;
     debugSf.visible = false;
     debugR.visible = false;
     debugt.visible = false;
+    debugHalvDobbel.visible = false;
 
     //Første baggrund + velkomst
     bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
@@ -174,6 +178,7 @@ function create () {
                 debugSf.visible = false;
                 debugR.visible = false;
                 debugt.visible = false;
+                debugHalvDobbel.visible = false;
                 showDebug = false;
             }
             else {
@@ -181,6 +186,7 @@ function create () {
                 debugSf.visible = true;
                 debugR.visible = true;
                 debugt.visible = true;
+                debugHalvDobbel.visible = true;
                 showDebug = true;
             }
         }
@@ -294,6 +300,23 @@ function update(time, delta) {
     debugK.setText("Multiplikationsfaktor: " + K);
     debugSf.setText("Neutronoverskud ved fission: " + formatter.format(Sf));
     debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(4));
+    
+    if(Sf > 0) {
+        debugHalvDobbel.setText("Fordoblingskonstant /s: " + parseFloat(Math.LN2*(L/(K-1))).toFixed(0));
+    }
+    else if (Sf == 0) {
+        debugHalvDobbel.setText("Fordoblingskonstant /s: 0");
+    }
+    else {
+        debugHalvDobbel.setText("Halveringskonstant /s: " + parseFloat(Math.LN2*(L/(K-1))).toFixed(0));
+    }
+
+    //Konverter tid til HH-MM-SS format
+    var date = new Date(null);
+    date.setSeconds(t);
+    var result = date.toISOString().substr(11, 8);
+
+    debugt.setText("Simuleret tid siden start: " + result);
 
     //Vis opfordring til at genstarte hvis antallet af neutroner er blevet meget lavt
     if (N < 10) {
@@ -303,15 +326,11 @@ function update(time, delta) {
         debugSf.visible = false;
         debugR.visible = false;
         debugt.visible = false;
+        debugHalvDobbel.visible = false;
         showDebug = false;
     }
 
-    //Konverter tid til HH-MM-SS format
-    var date = new Date(null);
-    date.setSeconds(t);
-    var result = date.toISOString().substr(11, 8);
-
-    debugt.setText("Simuleret tid siden start: " + result);
+    
 
     //Opdater info-bokse
     powerOutputText.setText(formatter.format(power) + " W")
