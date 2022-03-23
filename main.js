@@ -2,6 +2,7 @@ var config = {
     type: Phaser.AUTO,
     width: 1050,
     height: 600,
+    parent: "gameDiv",
     scene: {
         preload: preload,
         create: create,
@@ -47,6 +48,7 @@ let timeSliderText1x;
 let timeSliderText01x;
 let timeSliderText001x;
 
+let restartText;
 
 let geigerBeepEffect = document.getElementById("geigerAudioElem");
 
@@ -61,6 +63,7 @@ let deltaN;
 let power;
 
 let showDebug = false;
+let showRestartText = false;
 let firstScene = true;
 
 function preload () {
@@ -83,7 +86,7 @@ function create () {
     bg_dimmed = this.add.image(0, 0, 'dimmed_background').setOrigin(0, 0);
 
     //Tips
-    this.add.text(10, 10, 'Tryk på "D" for at vise og skjule debug-info!', { font: "15px Courier", color: "white", align: "left"});
+    this.add.text(10, 10, 'Tryk på "D" for at vise og skjule yderligere oplysninger!', { font: "15px Courier", color: "white", align: "left"});
 
     //Tegn skyder for kontrolstænger
     this.add.image(centerX, 525, "sliderbg");
@@ -132,6 +135,10 @@ function create () {
     bg = this.add.image(0, 0, 'background').setOrigin(0, 0);
     welcomeText = this.add.text(centerX + 3, 100, "- Tryk en vilkårlig tast for at starte -", { font: "40px Arial", color: "black", align: "center"}).setOrigin(0.5);
 
+    //Tekst der opfordrer til genstart
+    restartText = this.add.text(centerX, centerY, '-- Tryk på "R" for at genstarte simulationen --', { font: "35px Courier", color: "white", align: "center"}).setOrigin(0.5);
+    restartText.visible = false;
+
     //Gør det muligt at trække i skyderne
     controlRodSlider.setInteractive();
     this.input.setDraggable(controlRodSlider);
@@ -159,7 +166,7 @@ function create () {
         }
         
         //Vis/skjul debug menuen hvis brugeren trykker "D"
-        if (event.code == "KeyD"){
+        if (event.code == "KeyD") {
             if (showDebug) {
                 debugK.visible = false;
                 debugSf.visible = false;
@@ -173,6 +180,18 @@ function create () {
                 debugR.visible = true;
                 debugt.visible = true;
                 showDebug = true;
+            }
+        }
+
+        if (event.code == "KeyR") {
+            if (showRestartText) {
+                N = 3.2 * Math.pow(10,19);
+                t = 0;
+                controlRodPercentage = 0.5;
+                controlRodSlider.x = centerX;
+                timeSlider.y = 300;
+                restartText.visible = false;
+                showRestartText = false;
             }
         }
 
@@ -215,7 +234,8 @@ function create () {
 
 function simulateReactor() {
     R = controlRodPercentage * 500;
-    K = 0.998 - 0.01 * Math.sin(R * (Math.PI/500) + (Math.PI/2));
+    //Multiplikationsfaktoren rundes op, da det ellers er meget svært for brugeren at ramme en multiplikationsfaktor på 1
+    K = (0.998 - 0.01 * Math.sin(R * (Math.PI/500) + (Math.PI/2))).toFixed(4);
     Sf = (K - 1) * N / L;
     t += dt;
     N += Math.round(Sf * dt);
@@ -266,9 +286,20 @@ function update(time, delta) {
     simulateReactor();
     
     //Debug-visning
-    debugK.setText("Multiplikationsfaktor: " + K.toFixed(4));
+    debugK.setText("Multiplikationsfaktor: " + K);
     debugSf.setText("Neutronoverskud ved fission: " + formatter.format(Sf));
     debugR.setText("Kontrolstangsposition (0 = helt inde) /cm: " + R.toFixed(4));
+
+    //Vis opfordring til at genstarte hvis antallet af neutroner er blevet meget lavt
+    if (N < 10) {
+        showRestartText = true;
+        restartText.visible = true;
+        debugK.visible = false;
+        debugSf.visible = false;
+        debugR.visible = false;
+        debugt.visible = false;
+        showDebug = false;
+    }
 
     //Konverter tid til HH-MM-SS format
     var date = new Date(null);
