@@ -122,7 +122,7 @@ function create () {
     debugK = this.add.text(10, 250, "Multiplikationsfaktor: ", { font: "25px Courier", color: "white", align: "left"});
     debugSf = this.add.text(10, 275, "Neutronoverskud ved fission: ", { font: "25px Courier", color: "white", align: "left"});
     debugR = this.add.text(10, 300, "Kontrolstangsposition (0 = helt inde) /cm: ", { font: "25px Courier", color: "white", align: "left"});
-    debugt = this.add.text(10, 325, "Simuleret tid siden start /s: ", { font: "25px Courier", color: "white", align: "left"});
+    debugt = this.add.text(10, 325, "Simuleret tid siden start: ", { font: "25px Courier", color: "white", align: "left"});
     debugK.visible = false;
     debugSf.visible = false;
     debugR.visible = false;
@@ -275,7 +275,7 @@ function update(time, delta) {
     date.setSeconds(t);
     var result = date.toISOString().substr(11, 8);
 
-    debugt.setText("Simuleret tid siden start /s: " + result);
+    debugt.setText("Simuleret tid siden start: " + result);
 
     //Opdater info-bokse
     powerOutputText.setText(formatter.format(power) + " W")
