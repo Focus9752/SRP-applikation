@@ -308,7 +308,7 @@ function update(time, delta) {
         debugHalvDobbel.setText("Fordoblingskonstant /s: 0");
     }
     else {
-        debugHalvDobbel.setText("Halveringskonstant /s: " + parseFloat(Math.LN2*(L/(K-1))).toFixed(0));
+        debugHalvDobbel.setText("Halveringskonstant /s: " + parseFloat(Math.abs(Math.LN2*(L/(K-1)))).toFixed(0));
     }
 
     //Konverter tid til HH-MM-SS format
