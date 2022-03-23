@@ -149,6 +149,7 @@ function create () {
     //Start simultionen når brugeren trykker på skærmen...
     this.input.on('pointerdown', function(pointer){
             if (firstScene) {
+                geigerBeepEffect.play();
                 bg.destroy();
                 welcomeText.destroy();
                 geigerBeepEffect.muted = false;
@@ -159,6 +160,7 @@ function create () {
     //...eller en tast på tastaturet
     this.input.keyboard.on("keydown", function (event) {
         if (firstScene) {
+            geigerBeepEffect.play();
             bg.destroy();
             welcomeText.destroy();
             geigerBeepEffect.muted = false;
@@ -259,6 +261,9 @@ let geigerCounterInterval = setInterval(handleGeigerCounter, 10);
 let formatter = Intl.NumberFormat("en", { notation: "scientific", maximumSignificantDigits: 4, minimumSignificantDigits: 4 });
 
 function update(time, delta) {
+    if (game.sound.context.state === 'suspended') {
+        game.sound.context.resume();
+    }
     
     //Delta er tiden siden sidste frame i ms
     //Der omregnes til sekunder
