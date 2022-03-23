@@ -251,7 +251,7 @@ function handleGeigerCounter() {
         geigerBeepEffect.playbackRate = controlRodPercentage;   
     } 
     catch (error) {
-        //Gør ingenting
+
     }
 }
 
