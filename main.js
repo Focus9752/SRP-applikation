@@ -60,7 +60,7 @@ let sliderMiddle;
 
 let controlRodPercentage = 0;
 let deltaTime;
-let K, Sf, t = 0, N = 3.125 * Math.pow(10,19), dt = 0, L = 0.1, R = 0;
+let K, Sf, t = 0, N = 3.125 * Math.pow(10,18), dt = 0, L = 0.1, R = 0;
 let deltaN;
 let power;
 
