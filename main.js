@@ -242,7 +242,10 @@ function create () {
 
 function simulateReactor() {
     R = controlRodPercentage * 500;
-    //Multiplikationsfaktoren rundes op, da det ellers er meget svært for brugeren at ramme en multiplikationsfaktor på 1
+    /*
+    Multiplikationsfaktoren rundes op, 
+    da det ellers er meget svært for brugeren at ramme en multiplikationsfaktor på 1
+    */
     K = (0.998 - 0.01 * Math.sin(R * (Math.PI/500) + (Math.PI/2))).toFixed(4);
     Sf = (K - 1) * N / L;
     t += dt;
